@@ -1,0 +1,69 @@
+=== PROBE 524a: VM ops + page table modifiers ===
+
+pid: 570
+GPU mmap: 0x3107F0000
+eboot text: 0x19AF0000
+
+[A] sys 653 — page table attribute modifier
+  653(GPU mmap): ret=-1
+  653(heap buf): ret=-1
+  653(eboot text): ret=-1
+  653(zero): ret=23
+    *** NON-FAIL RETURN: 23 ***
+  653(one): ret=-1
+  653(16KB page size): ret=-1
+  653(gpu, 0x1): ret=-1
+  653(gpu, 0x3): ret=-1
+  653(gpu, 0x5): ret=-1
+  653(gpu, 0x7): ret=-1
+  653(gpu, 0x33): ret=-1
+
+[B] sys 654 — 64KiB VM range operation
+  654(gpu,64K,RW,0,buf): ret=-1
+  654(gpu,64K,0,0,0): ret=-1
+  654(0,64K,0,0,0): ret=-1
+  654(cmd0,gpu,64K,RW,buf): ret=-1
+  654(cmd1,gpu,64K,RW,buf): ret=-1
+  654(cmd2,gpu,64K,RW,buf): ret=-1
+  654(fd-1,0,64K,RW,buf): ret=-1
+
+[C] sys 655 — VM range reset companion
+  655(gpu,64K,0): ret=-1
+  655(gpu,16K,0): ret=-1
+  655(0,64K,0): ret=-1
+  655(fd-1,0,64K): ret=-1
+
+[D] sys 660 — dynlib info v2
+  660(h=0, pad=0, zerobuf): ret=-1
+  660(h=2, pad=0, zerobuf): ret=-1
+
+[E] sys 667 — process/thread enumeration
+  667(pid,buf,4K,countptr): ret=-1
+  667(pid,0,0,countptr): ret=-1
+  667(0,buf,4K,countptr): ret=-1
+  667(buf,256,mode0): ret=-1
+  667(buf,256,mode1): ret=-1
+  667(zeros): ret=-1
+
+[F] sys 645/648
+  645(): ret=-1
+  648(buf[0]=0x40): ret=-1
+  648(buf[0]=0x100): ret=-1
+  648(buf[0]=0x200): ret=-1
+  648(buf[0]=0x400): ret=-1
+
+[G] sys 658 — descriptor synchronization
+  test socket fd: 24
+  658(fd0,0): ret=-1
+  658(sock,0): ret=-1
+  658(fd-1,0): ret=-1
+  658(sock,slot1): ret=-1
+  658(sock,slot256): ret=-1
+
+[H] sys 647 — ORBI metadata query
+  647(buf): ret=-1
+  647(0): ret=-1
+
+pid: 570 OK
+
+=== PROBE 524a COMPLETE ===

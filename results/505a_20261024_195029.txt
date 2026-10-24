@@ -1,0 +1,46 @@
+=== PROBE 505a: dlsym(591) NID resolution ===
+
+pid: 500
+
+[A] Collecting module handles...
+  handle=0 name=eboot.bin
+  handle=2 name=libSceLibcInternal.sprx
+  handle=17 name=libSceSysmodule.sprx
+  handle=19 name=libSceFios2.prx
+  handle=20 name=libc.prx
+  handle=34 name=libSceNet.sprx
+  handle=49 name=libSceIpmi.sprx
+  handle=50 name=libSceMbus.sprx
+  total: 8
+
+[B] Testing 591 with known NIDs...
+
+[C] Testing 591 with ordinal numbers (0-20)...
+
+[D] Testing 591 with module:name format...
+
+[E] Testing 591 with special inputs...
+
+[F] Load libkernel via 594, then dlsym...
+  594(/system/common/lib/libkernel.sprx) ret=-1 handle=0x0
+  594(/system/common/lib/libkernel_sys.sprx) ret=-1 handle=0x0
+  594(/system/common/lib/libkernel_web.sprx) ret=-1 handle=0x0
+  594(libkernel.sprx) ret=0 handle=0x2001
+  594(libkernel) ret=-1 handle=0x0
+
+[G] Detailed return value analysis for 591...
+  591(h=0, 'getpid') raw_ret=0xFFFFFFFFFFFFFFFFFFFFFFFF (-1)
+  591(h=0, 'malloc') raw_ret=0xFFFFFFFFFFFFFFFFFFFFFFFF (-1)
+  591(h=0, 'sceKernelOpen') raw_ret=0xFFFFFFFFFFFFFFFFFFFFFFFF (-1)
+  591(h=0, NULL) ret=-1
+  591(h=9999, 'getpid') ret=-1
+
+=== SUMMARY ===
+No symbols resolved with any format tested.
+Next: need SHA1-based NID computation in Lua,
+or a known NID database specific to PS5 14.10
+
+=== VERIFICATION ===
+pid: 500 [OK]
+
+=== PROBE 505a COMPLETE ===

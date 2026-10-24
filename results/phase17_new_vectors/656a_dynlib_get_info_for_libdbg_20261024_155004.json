@@ -1,0 +1,15 @@
+{
+  "elapsed_seconds": 0.059,
+  "ended_at": "2026-10-24T15:50:04+02:00",
+  "idle_timeout_seconds": 30.0,
+  "metadata_path": "results/phase17_new_vectors/656a_dynlib_get_info_for_libdbg_20261024_155004.json",
+  "output_path": "results/phase17_new_vectors/656a_dynlib_get_info_for_libdbg_20261024_155004.txt",
+  "probe": "/Users/ettore/Developer/personal/PS5-14.10-Research/probes/phase17_new_vectors/656a_dynlib_get_info_for_libdbg.lua",
+  "probe_bytes": 6177,
+  "probe_sha256": "610b0a5b3e0e586b28b89aeeab44ee2f176c429f5a4a74b4a5dcf3cae5400dbc",
+  "remote": "192.168.1.35:9026",
+  "response_bytes": 1266,
+  "started_at": "2026-10-24T15:50:04+02:00",
+  "status": "COMPLETE",
+  "total_timeout_seconds": null
+}

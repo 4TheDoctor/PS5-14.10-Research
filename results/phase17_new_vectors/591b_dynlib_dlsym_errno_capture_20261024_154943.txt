@@ -1,0 +1,45 @@
+=== PROBE 591b: DYNLIB_DLSYM ERRNO CAPTURE ===
+
+[A] Get a valid handle from sys 593:
+
+  handle=0: 593 OK, name=eboot.bin
+  handle=2: 593 OK, name=libSceLibcInternal.sprx
+  handle=17: 593 OK, name=libSceSysmodule.sprx
+  handle=19: 593 OK, name=libSceFios2.prx
+  handle=20: 593 OK, name=libc.prx
+
+[B] Test 591 with valid handles (errno capture):
+
+  591(h=0, "printf"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=0, "malloc"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=0, "strlen"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=0, "open"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=0, "sceKernelExitProcess"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=2, "printf"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=2, "malloc"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=2, "strlen"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=2, "open"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=2, "sceKernelExitProcess"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=17, "printf"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=17, "malloc"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=17, "strlen"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=17, "open"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=17, "sceKernelExitProcess"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=19, "printf"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=19, "malloc"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=19, "strlen"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=19, "open"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=19, "sceKernelExitProcess"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=20, "printf"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=20, "malloc"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=20, "strlen"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=20, "open"): ret=-1   out=0x00000000_00000000 errno=N/A
+  591(h=20, "sceKernelExitProcess"): ret=-1   out=0x00000000_00000000 errno=N/A
+
+[C] Test 591 with handle range sweep (errno capture):
+
+
+[D] Stability check:
+  593(0, ...): ret=-1
+
+=== PROBE 591b COMPLETE ===

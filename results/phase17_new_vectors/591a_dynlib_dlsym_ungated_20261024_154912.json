@@ -1,0 +1,15 @@
+{
+  "elapsed_seconds": 4.347,
+  "ended_at": "2026-10-24T15:49:12+02:00",
+  "idle_timeout_seconds": 30.0,
+  "metadata_path": "results/phase17_new_vectors/591a_dynlib_dlsym_ungated_20261024_154912.json",
+  "output_path": "results/phase17_new_vectors/591a_dynlib_dlsym_ungated_20261024_154912.txt",
+  "probe": "/Users/ettore/Developer/personal/PS5-14.10-Research/probes/phase17_new_vectors/591a_dynlib_dlsym_ungated.lua",
+  "probe_bytes": 6514,
+  "probe_sha256": "0036417bdac850a2aff8d6aa4f82b7b7e1a2cba2f08ea3f892cb581f1eaa77f4",
+  "remote": "192.168.1.35:9026",
+  "response_bytes": 4001,
+  "started_at": "2026-10-24T15:49:08+02:00",
+  "status": "COMPLETE",
+  "total_timeout_seconds": null
+}

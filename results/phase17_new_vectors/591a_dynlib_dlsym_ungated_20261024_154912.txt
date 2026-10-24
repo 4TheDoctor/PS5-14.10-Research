@@ -1,0 +1,109 @@
+=== PROBE 591a: DYNLIB_DLSYM UNGATED SYMBOL RESOLUTION ===
+
+[A] Get a real handle from sys 593 (dynlib_get_info):
+
+  handle=0: 593 OK, name=eboot.bin
+  handle=1: 593 ret=-1
+  handle=2: 593 OK, name=libSceLibcInternal.sprx
+  handle=3: 593 ret=-1
+  handle=4: 593 ret=-1
+  handle=5: 593 ret=-1
+  handle=6: 593 ret=-1
+  handle=7: 593 ret=-1
+  handle=8: 593 ret=-1
+  handle=9: 593 ret=-1
+  handle=10: 593 ret=-1
+
+[B] Test sys 591 (dynlib_dlsym) with known NID strings:
+
+  591(h=2, "printf"): ret=-1   out=0x00000000_00000000
+  591(h=2, "malloc"): ret=-1   out=0x00000000_00000000
+  591(h=2, "free"): ret=-1   out=0x00000000_00000000
+  591(h=2, "memcpy"): ret=-1   out=0x00000000_00000000
+  591(h=2, "memset"): ret=-1   out=0x00000000_00000000
+  591(h=2, "strlen"): ret=-1   out=0x00000000_00000000
+  591(h=2, "strcmp"): ret=-1   out=0x00000000_00000000
+  591(h=2, "open"): ret=-1   out=0x00000000_00000000
+  591(h=2, "close"): ret=-1   out=0x00000000_00000000
+  591(h=2, "read"): ret=-1   out=0x00000000_00000000
+  591(h=2, "write"): ret=-1   out=0x00000000_00000000
+  591(h=2, "_printf"): ret=-1   out=0x00000000_00000000
+  591(h=2, "__printf"): ret=-1   out=0x00000000_00000000
+  591(h=2, "sceKernelExitProcess"): ret=-1   out=0x00000000_00000000
+  591(h=2, "sceKernelGetProcessTime"): ret=-1   out=0x00000000_00000000
+  591(h=2, "sceKernelGetThreadTime"): ret=-1   out=0x00000000_00000000
+  591(h=2, "dlsym"): ret=-1   out=0x00000000_00000000
+  591(h=2, "load_prx"): ret=-1   out=0x00000000_00000000
+  591(h=2, "start"): ret=-1   out=0x00000000_00000000
+  591(h=2, "stop"): ret=-1   out=0x00000000_00000000
+
+[C] Test sys 591 with handle=0 (control — should return error 3):
+  591(h=0, "printf"): ret=-1  
+  591(h=0, "malloc"): ret=-1  
+  591(h=0, "free"): ret=-1  
+  591(h=0, "memcpy"): ret=-1  
+  591(h=0, "memset"): ret=-1  
+  591(h=0, "strlen"): ret=-1  
+  591(h=0, "strcmp"): ret=-1  
+  591(h=0, "open"): ret=-1  
+  591(h=0, "close"): ret=-1  
+  591(h=0, "read"): ret=-1  
+  591(h=0, "write"): ret=-1  
+  591(h=0, "_printf"): ret=-1  
+  591(h=0, "__printf"): ret=-1  
+  591(h=0, "sceKernelExitProcess"): ret=-1  
+  591(h=0, "sceKernelGetProcessTime"): ret=-1  
+  591(h=0, "sceKernelGetThreadTime"): ret=-1  
+  591(h=0, "dlsym"): ret=-1  
+  591(h=0, "load_prx"): ret=-1  
+  591(h=0, "start"): ret=-1  
+  591(h=0, "stop"): ret=-1  
+
+[D] Test sys 591 with handle=1 (control):
+  591(h=1, "printf"): ret=-1  
+  591(h=1, "malloc"): ret=-1  
+  591(h=1, "free"): ret=-1  
+  591(h=1, "memcpy"): ret=-1  
+  591(h=1, "memset"): ret=-1  
+  591(h=1, "strlen"): ret=-1  
+  591(h=1, "strcmp"): ret=-1  
+  591(h=1, "open"): ret=-1  
+  591(h=1, "close"): ret=-1  
+  591(h=1, "read"): ret=-1  
+  591(h=1, "write"): ret=-1  
+  591(h=1, "_printf"): ret=-1  
+  591(h=1, "__printf"): ret=-1  
+  591(h=1, "sceKernelExitProcess"): ret=-1  
+  591(h=1, "sceKernelGetProcessTime"): ret=-1  
+  591(h=1, "sceKernelGetThreadTime"): ret=-1  
+  591(h=1, "dlsym"): ret=-1  
+  591(h=1, "load_prx"): ret=-1  
+  591(h=1, "start"): ret=-1  
+  591(h=1, "stop"): ret=-1  
+
+[E] Test sys 591 with handle=0xFFFFFFFF (control):
+  591(h=0xFFFFFFFF, "printf"): ret=-1  
+  591(h=0xFFFFFFFF, "malloc"): ret=-1  
+  591(h=0xFFFFFFFF, "free"): ret=-1  
+  591(h=0xFFFFFFFF, "memcpy"): ret=-1  
+  591(h=0xFFFFFFFF, "memset"): ret=-1  
+  591(h=0xFFFFFFFF, "strlen"): ret=-1  
+  591(h=0xFFFFFFFF, "strcmp"): ret=-1  
+  591(h=0xFFFFFFFF, "open"): ret=-1  
+  591(h=0xFFFFFFFF, "close"): ret=-1  
+  591(h=0xFFFFFFFF, "read"): ret=-1  
+  591(h=0xFFFFFFFF, "write"): ret=-1  
+  591(h=0xFFFFFFFF, "_printf"): ret=-1  
+  591(h=0xFFFFFFFF, "__printf"): ret=-1  
+  591(h=0xFFFFFFFF, "sceKernelExitProcess"): ret=-1  
+  591(h=0xFFFFFFFF, "sceKernelGetProcessTime"): ret=-1  
+  591(h=0xFFFFFFFF, "sceKernelGetThreadTime"): ret=-1  
+  591(h=0xFFFFFFFF, "dlsym"): ret=-1  
+  591(h=0xFFFFFFFF, "load_prx"): ret=-1  
+  591(h=0xFFFFFFFF, "start"): ret=-1  
+  591(h=0xFFFFFFFF, "stop"): ret=-1  
+
+[F] Stability check:
+  593(0, ...): ret=0
+
+=== PROBE 591a COMPLETE ===

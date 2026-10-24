@@ -1,0 +1,47 @@
+=== PROBE 660a: DYNLIB_GET_INFO2 NO GATE ===
+
+[A] Enumerate valid handles via sys 593:
+
+  handle=0: 593 OK, name=eboot.bin
+  handle=1: 593 ret=-1
+  handle=2: 593 OK, name=libSceLibcInternal.sprx
+  handle=3: 593 ret=-1
+  handle=4: 593 ret=-1
+  handle=5: 593 ret=-1
+  handle=6: 593 ret=-1
+  handle=7: 593 ret=-1
+  handle=8: 593 ret=-1
+  handle=9: 593 ret=-1
+  handle=10: 593 ret=-1
+  handle=11: 593 ret=-1
+  handle=12: 593 ret=-1
+  handle=13: 593 ret=-1
+  handle=14: 593 ret=-1
+  handle=15: 593 ret=-1
+  handle=16: 593 ret=-1
+  handle=17: 593 OK, name=libSceSysmodule.sprx
+  handle=18: 593 ret=-1
+  handle=19: 593 OK, name=libSceFios2.prx
+  handle=20: 593 OK, name=libc.prx
+
+[B] Call sys 660 (dynlib_get_info2) for each valid handle:
+
+--- handle=0 ---
+  660 ret=-1
+
+--- handle=2 ---
+  660 ret=-1
+
+--- handle=17 ---
+  660 ret=-1
+
+--- handle=19 ---
+  660 ret=-1
+
+--- handle=20 ---
+  660 ret=-1
+
+[C] Stability check:
+  593(0, ...): ret=-1
+
+=== PROBE 660a COMPLETE ===

@@ -1,0 +1,37 @@
+=== PROBE 503a: dynlib_dlsym(591) ungated ===
+
+pid: 486
+
+[A] Enumerating module handles via 593...
+  handle=0 name=eboobootoot.ot.bt.bi.binbin
+  handle=2 name=libSibScbSceSceLceLieLibLibcibcIbcIncIntIntenterternernarnal
+  handle=17 name=libSibScbSceSceSceSyeSysSysmysmosmodmoduodulduleule.le.se.sp
+  handle=19 name=libSibScbSceSceFceFieFioFiosios2os2.s2.p2.pr.prxprx
+  handle=20 name=libcibc.bc.pc.pr.prxprx
+  handle=34 name=libSibScbSceSceNceNeeNetNet.et.st.sp.sprsprxprx
+  handle=49 name=libSibScbSceSceIceIpeIpmIpmipmi.mi.si.sp.sprsprxprx
+  handle=50 name=libSibScbSceSceMceMbeMbuMbusbus.us.ss.sp.sprsprxprx
+  total valid handles: 8
+
+[B] Preparing symbol name strings...
+
+[C] Testing 591 dynlib_dlsym...
+  handle=0 sym=sceKernelGetModuleInfo ret=-1 out=0xDEADBEEF
+  handle=0 sym=getpid ret=-1 out=0xDEADBEEF
+  handle=0 sym=sceKernelGetModuleInfo ret=-1 out=0xDEADBEEF
+  handle=0 sym=getpid ret=-1 out=0xDEADBEEF
+  no symbols resolved (all returned nonzero)
+
+[D] Testing 594 dynlib_load_prx (module load)...
+  /app0/sce_module/libc.prx ret=0 handle=0x14
+  /app0/sce_module/libSceNpManager.sprx ret=-1 handle=0x0
+  /system/common/lib/libSceNet.sprx ret=-1 handle=0x0
+  /system/common/lib/libkernel.sprx ret=-1 handle=0x0
+
+[E] Checking errno accessibility...
+  fn_addr: 0x311105fd0
+
+=== VERIFICATION ===
+pid: 486 [OK]
+
+=== PROBE 503a COMPLETE ===

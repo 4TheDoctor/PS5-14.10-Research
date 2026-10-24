@@ -1,0 +1,44 @@
+=== PROBE 504a: dynlib_get_info2(660) + libdbg(656) dump ===
+
+pid: 486
+
+[A] Collecting module handles via 593...
+  valid handles: 8
+
+[B] Testing 660 dynlib_get_info2 with real handles...
+  handle=0 (eboot.bin)
+    660 ret=0
+    DIFF +0x000: 593=0x00000000 660=0x00000160
+    total diffs: 1 dwords
+  handle=2 (libSceLibcInternal.sprx)
+    660 ret=-1
+  handle=17 (libSceSysmodule.sprx)
+    660 ret=-1
+  handle=19 (libSceFios2.prx)
+    660 ret=0
+    DIFF +0x000: 593=0x00000000 660=0x00000160
+    total diffs: 1 dwords
+  handle=20 (libc.prx)
+    660 ret=0
+    DIFF +0x000: 593=0x00000000 660=0x00000160
+    total diffs: 1 dwords
+
+[C] Testing 656 dynlib_get_info_for_libdbg (debug-unit gate)...
+  656 ret=-1 (0=debug predicates PASS, nonzero=gated)
+
+[D] Testing 659 dynlib_get_list...
+  659 ret=0 count=3
+    [0] handle=0
+    [1] handle=19
+    [2] handle=20
+
+[E] Testing 572 alternate arg shapes...
+  shape1(0, out, 0x100) ret=-1 first_dw=0xDEADBEEF
+  shape2(out, 0x100, cmd=1) ret=0 first_dw=0xDEADBEEF
+  shape3(cmd=1, out, 0x100) ret=-1 first_dw=0xDEADBEEF
+  shape4(out, 0x200, 0) ret=0 first_dw=0xDEADBEEF
+
+=== VERIFICATION ===
+pid: 486 [OK]
+
+=== PROBE 504a COMPLETE ===

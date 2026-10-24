@@ -416,6 +416,7 @@ Results are saved to `results/<phase>/<name>_<timestamp>.txt`.
 - **FatGid/setcred (CVE-2026-45250)** — syscall 591 is in the Sony range and returns -1 (not crash). setcred was added in FreeBSD 14.3; PS5 kernel is FreeBSD 11-based. Not present. (probe 392a, 2026-10-23)
 - **CVE-2026-58094 (ZDI-26-785, FIOSSHMLPGCNF TOCTOU)** — ioctl on shm fd returns -1 for all size variants. Requires largepage infrastructure which is absent. (probe 392a, 2026-10-23)
 - **BSD-native syscall range (1-530) exhausted** (388a-392f, 2026-10-23): ~400 syscalls tested across probes 388a-389i (phase 18) and 392a-392f (phase 20). sc102 returns 160B socket info, sc125 returns 160B interface data — both zero kernel pointers. fstatfs/getfsstat/statfs all blocked. 40 unnamed slots (91,94,119,151-153,etc) all -1 for three arg patterns. modfind/modnext/modfnext blocked. ktimer create/settime accept but gettime/delete fail (stubs). stat shows /, /dev/*, /app0/*, /system_tmp visible (mode=0x0000 everywhere). socketclose(114) works as alt close. sched_getparam returns prio=700 (Sony custom). getlogin="root". profil accepts but writes 0 samples. ptrace/rfork/minherit/cpuset/audit all blocked. **Zero kernel pointers found across the entire BSD-native range.**
+- **Module data region "kernel pointers" are NaN-boxed Lua values** (519a-522a, 2026-10-24): dynlib_get_info(593) data regions for 37 modules contain stride-8 tables of 64-bit values with `hi >= 0xFFFF8000`. Initial scan found 5081 such values, all writable. However: 521a revealed the table includes 0xFFFF7xxx values below the filter, with arithmetic progression (+0x30 in high words = 16KB page multiples); 522a proved 100% of the 305 values in h=2's table are IEEE 754 NaN (exponent = 0x7FF). These are Lua 5.1 NaN-boxed non-double values (strings, tables, functions, userdata), not kernel pointers. The table occupies +0x9F00 to +0xA880 (2440 bytes, 0.5% of the 540KB data region). Zero kernel pointers exist in any module data region. Do not re-scan module data for kernel addresses.
 
 **NEXT STEPS:**
 1. **★ Kernel image acquisition** — without a 14.10 kernel dump, we can't identify the Praetorian ioctl device/command (may require credentials the game lacks), verify sysent layout, or find new attack surface. Investigate if any accessible syscall or device node can copy kernel .text (e.g. debug stubs, coredump paths, unknown 13.60 syscalls that might work differently on 14.10).
@@ -443,10 +444,11 @@ Results are saved to `results/<phase>/<name>_<timestamp>.txt`.
 - CVE-2026-49419 jail refcount DEAD (392a) — all jail syscalls -1
 - FatGid/setcred DEAD (392a) — syscall 591 is Sony, not FreeBSD setcred
 - **BSD-native range (1-530) EXHAUSTED (388a-392f)** — zero kernel pointers across ~400 tested syscalls. sc102/sc125 return data but all userland. 40 unnamed slots dead. fstatfs/getfsstat/mod* all blocked
+- **Module data "kernel pointers" are NaN-boxed Lua values (519a-522a)** — 5081 values matching 0xFFFF8xxx across 37 modules are 100% IEEE 754 NaN. Stride-8 table, hi words increment by 16KB page multiples. These are Lua 5.1 internal TValue representations, not kernel pointers. Dead end closed.
 
 ## When Analyzing Results
 
-1. **Kernel pointers** are in the `0xFFFF8xxx_xxxxxxxx` range. Values like `0xFFFFFFFF_00000000` are bitmasks, not pointers.
+1. **Kernel pointers** are in the `0xFFFF8xxx_xxxxxxxx` range. Values like `0xFFFFFFFF_00000000` are bitmasks, not pointers. **CRITICAL: Lua 5.1 NaN-boxed values also fall in this range** — any 64-bit value with IEEE 754 exponent bits = 0x7FF (bits 62:52) is NaN, not a pointer. Module `.data` regions contain thousands of NaN-boxed Lua TValues. Always check the exponent field before declaring a kernel pointer.
 2. **ret=0** means success for most syscalls. **ret=-1** means failure. **ret=-999** means the pcall itself failed (crash or exception).
 3. **Always cross-reference** against docs/FINDINGS.md and the dead ends list above before declaring something new.
 4. **Update UNTESTED_THEORIES.md** when a theory is tested — mark it confirmed, dead, or partially tested.

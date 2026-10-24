@@ -1,0 +1,59 @@
+=== PROBE 518a: GOT + module scan ===
+pid: 563
+text: 0x2F1B8000
+data: 0x2F9B8000
+rodata: 0x2F7B8000
+
+[A] Rodata pointers from data segment
+  +0x38 -> 0x2F7CD780 [0]=0xA8
+  +0x40 -> 0x2F7CD828 [0]=0x38
+  +0x48 -> 0x2F7CD860 [0]=0x10
+
+[B] GOT scan in data segment
+  loaded modules: 6
+  [1] h=0 text=0x2F1B8000 data=0x2F9B8000 "eboot.bin"
+  [2] h=2 text=0x839570000 data=0x839698000 "libSceLibcInternal.sprx"
+  [3] h=17 text=0x821D00000 data=0x821D0C000 "libSceSysmodule.sprx"
+  [4] h=19 text=0x14BCF0000 data=0x14BD54000 "libSceFios2.prx"
+  [5] h=20 text=0x1C5150000 data=0x1C5268000 "libc.prx"
+  [6] h=34 text=0x830944000 data=0x830978000 "libSceNet.sprx"
+
+  scanning data for code pointers...
+    ...+0x20000 ptrs=26 best_run=3
+    ...+0x40000 ptrs=47 best_run=3
+    ...+0x60000 ptrs=68 best_run=3
+    ...+0x80000 ptrs=89 best_run=3
+    ...+0xA0000 ptrs=110 best_run=3
+    ...+0xC0000 ptrs=131 best_run=3
+    ...+0xE0000 ptrs=152 best_run=3
+  total code pointers: 173
+  longest consecutive run: 3 at 0x2F9B8038
+
+[D] Module data kptr scan
+  KPTR: h=19 +0x158 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x160 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x168 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x170 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x178 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x180 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x188 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x190 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x198 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x1A0 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x1A8 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x1B0 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x1B8 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x1C0 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x1C8 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x1D0 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x1D8 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x1E0 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x1E8 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x1F0 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+  KPTR: h=19 +0x1F8 = 0xFFFFFFFFFFFFFFFF "libSceFios2.prx"
+
+[E] Strings at rodata pointer targets
+
+pid: 563 OK
+
+=== PROBE 518a COMPLETE ===

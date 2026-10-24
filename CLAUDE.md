@@ -53,6 +53,7 @@ This section scopes the current claims; older notes describe their cited probe s
 | POSIX shm (shm_open/ftruncate/mmap) | shm_open(482) works: SHM_ANON, named objects, O_CREAT\|O_RDWR, ftruncate, mmap(MAP_SHARED). sendfile(393) on shm fds sends 16KB/page with interleaved drain. shm_open2(571) is nosys — no largepage objects. Probes 391a-391d, 2026-10-23 |
 | mlock(203) heap pages | mlock returns 0 on heap pages — prevents paging, ensures residency. munlock(204) also works. Probe 392f, 2026-10-23 |
 | stat(188) filesystem enumeration | stat works on /, /dev, /dev/*, /app0, /app0/*, /system_tmp. mode=0x0000 everywhere (Sony zeroes). Other paths (/system, /data, /proc, /tmp) return -1. Probe 392f, 2026-10-23 |
+| SCM_RIGHTS fd passing | sendmsg/recvmsg with SCM_RIGHTS delivers working fds across SOCK_STREAM/DGRAM/SEQPACKET socketpairs. Multiple fds (3+) in one message work. Received fds pass fstat. **Probe 56q was wrong** — 526a confirms fd passing is NOT stripped in game jail. Probe 526a, 2026-10-24 |
 
 ### What's Blocked (Hard Walls)
 - **fn_addr/ROP execution is not demonstrated** — 45c undermines that earlier model for tested calls. Later selected CClosure redirects are separate userland evidence; neither identifies the complete syscall dispatcher
@@ -335,7 +336,7 @@ docs/
 - **procctl(544) output scan** — all 7 status commands (REAP_STATUS, TRAPCAP, ASLR, STACKGAP, NO_NEW_PRIVS, WXMAP, PDEATHSIG) return -1 with zero bytes written. Completely blocked for game process. (probe 56p section C, 2026-10-23)
 - **getrlimit overcopy + kptr scan** — 12 resource types tested. Non-infinite limits: MEMLOCK=32GiB, SBSIZE=2MiB, NOFILE=1604, NPROC=13952. Zero overcopy past 16-byte struct rlimit. Zero kernel pointers. (probe 56p section D, 2026-10-23)
 - **kevent output scan** — kqueue(362) + kevent(363) with EVFILT_READ on socket and EVFILT_TIMER. Both return 0 events with zero timeout. No data written to output buffer. (probe 56q section A, 2026-10-23)
-- **SCM_RIGHTS fd passing** — unix socketpair sendmsg with SCM_RIGHTS succeeds (ret=4) but recvmsg returns controllen=0: kernel strips fd-passing ancillary data in the game jail. No cmsg to scan. (probe 56q section B, 2026-10-23)
+- **SCM_RIGHTS fd passing WORKS** — probe 56q was WRONG (controllen=0 was a probe bug). Retest 526a (2026-10-24): ALL socket types (STREAM/DGRAM/SEQPACKET) deliver fds via SCM_RIGHTS. controllen=24, received fds pass fstat. Multiple fds (3) in one message: controllen=32, all 3 fds valid. mode=0x2124 (chardev /dev/rng), mode=0xC1B6 (unix socket). GHOST HANDLE chain (CVE-2019-5607) prerequisites MET.
 - **sendfile error path data leak** — sendfile(393) returns -1 on unconnected TCP socket. sbytes output pointer left completely unmodified (sentinel intact). No partial write, no kernel stack data leak on error. (probe 56q section C, 2026-10-23)
 - **poll output overcopy** — poll(209) on UDP socket with zero timeout. revents=0, zero bytes modified past 8-byte pollfd struct. (probe 56q section D, 2026-10-23)
 - **Signal delivery frame (sendsig) kernel stack residue** — sigframe is 2128 bytes (0x850), 486 modified dwords, all zeros and userland addresses. sendsig() zero-initializes the frame. No kernel pointers in padding. (probe 56r, 2026-10-23)
@@ -404,7 +405,7 @@ Results are saved to `results/<phase>/<name>_<timestamp>.txt`.
 - procctl — all 7 status cmds blocked (ret=-1) (56p)
 - getrlimit — standard limits, no overcopy, no kptrs (56p)
 - kevent — no events returned, nothing written (56q)
-- SCM_RIGHTS — kernel strips fd passing in game jail (56q)
+- ~~SCM_RIGHTS~~ — **RETRACTED**: 56q was wrong; 526a proves fd passing WORKS (2026-10-24)
 - sendfile error path — sbytes untouched on failure (56q)
 - poll — no overcopy past pollfd (56q)
 - Signal delivery frame (sendsig) — frame zero-initialized, no kptrs (56r)
@@ -419,9 +420,10 @@ Results are saved to `results/<phase>/<name>_<timestamp>.txt`.
 - **Module data region "kernel pointers" are NaN-boxed Lua values** (519a-522a, 2026-10-24): dynlib_get_info(593) data regions for 37 modules contain stride-8 tables of 64-bit values with `hi >= 0xFFFF8000`. Initial scan found 5081 such values, all writable. However: 521a revealed the table includes 0xFFFF7xxx values below the filter, with arithmetic progression (+0x30 in high words = 16KB page multiples); 522a proved 100% of the 305 values in h=2's table are IEEE 754 NaN (exponent = 0x7FF). These are Lua 5.1 NaN-boxed non-double values (strings, tables, functions, userdata), not kernel pointers. The table occupies +0x9F00 to +0xA880 (2440 bytes, 0.5% of the 540KB data region). Zero kernel pointers exist in any module data region. Do not re-scan module data for kernel addresses.
 
 **NEXT STEPS:**
-1. **★ Kernel image acquisition** — without a 14.10 kernel dump, we can't identify the Praetorian ioctl device/command (may require credentials the game lacks), verify sysent layout, or find new attack surface. Investigate if any accessible syscall or device node can copy kernel .text (e.g. debug stubs, coredump paths, unknown 13.60 syscalls that might work differently on 14.10).
-2. **JSC corpus** — requires browser access mechanism from game process (not currently available)
-3. **Revisit 13.60 dossier for undiscovered Sony syscall arg shapes** — the Sony range (532-676) is largely exhausted but a few handlers (604, 636) have no decoded contract. New arg patterns from deeper decompilation might unlock handlers that returned -1 to generic args.
+1. **★★★ GHOST HANDLE exploitation (CVE-2019-5607)** — SCM_RIGHTS confirmed working (526a). Next: test reference leak on failed sendmsg (fill socket buffer, send SCM_RIGHTS, check if refcount leaks). If the leak exists, iterate to overflow 32-bit refcount → UAF on kernel file object → heap spray for controlled corruption → kernel R/W. Combined with thr_new child threads for concurrent fd racing.
+2. **★★ fd-close race via child thread** — use thr_new ROP child to close(fd) simultaneously with main thread sendmsg(SCM_RIGHTS, fd). Detect stale fd, type confusion, or kernel panic.
+3. **★ Kernel image acquisition** — without a 14.10 kernel dump, we can't identify the Praetorian ioctl device/command (may require credentials the game lacks), verify sysent layout, or find new attack surface.
+4. **Revisit 13.60 dossier for undiscovered Sony syscall arg shapes** — the Sony range (532-676) is largely exhausted but a few handlers (604, 636) have no decoded contract.
 
 **DONE (this session):**
 - thr_new(455) arg delivery confirmed (56l) — rdi=arg, gadget at eboot+0x92C67
@@ -430,7 +432,7 @@ Results are saved to `results/<phase>/<name>_<timestamp>.txt`.
 - Thread slot reclaim confirmed (243a) — 27 total spawns
 - SCM_CREDS + sigaction + fstat + getdirentries scan all clean (56o)
 - getrusage + SO_TIMESTAMP + procctl + getrlimit scan all clean (56p)
-- kevent + SCM_RIGHTS + sendfile + poll scan all clean/blocked (56q)
+- kevent + sendfile + poll scan all clean/blocked (56q); SCM_RIGHTS RETRACTED — works (526a)
 - Signal frame (sendsig) scan clean (56r) — 2128B frame, all userland
 - Full eboot syscall scan: 18 hits, zero syscall;ret confirmed (56s)
 - **Child thread ROP syscalls confirmed (271g)** — close(fd) via ROP chain on child stack. Gadgets: pop_rax_ret at eboot+0x992, pop_rdi_rbp_ret at +0x169
@@ -445,6 +447,11 @@ Results are saved to `results/<phase>/<name>_<timestamp>.txt`.
 - FatGid/setcred DEAD (392a) — syscall 591 is Sony, not FreeBSD setcred
 - **BSD-native range (1-530) EXHAUSTED (388a-392f)** — zero kernel pointers across ~400 tested syscalls. sc102/sc125 return data but all userland. 40 unnamed slots dead. fstatfs/getfsstat/mod* all blocked
 - **Module data "kernel pointers" are NaN-boxed Lua values (519a-522a)** — 5081 values matching 0xFFFF8xxx across 37 modules are 100% IEEE 754 NaN. Stride-8 table, hi words increment by 16KB page multiples. These are Lua 5.1 internal TValue representations, not kernel pointers. Dead end closed.
+- **SysV IPC completely absent (525a, 2026-10-24)** — semget(221), shmget(231), msgget(225) all return -1 with proper struct arguments (not just zeros). __semctl(220), semop(222), shmat(228), msgsnd(226), msgrcv(227) also -1. CVE-2026-58087 is dead — Sony removed the entire SysV IPC subsystem.
+- **VM ops dead (524a, 2026-10-24)** — sys 653/654/655/660/667/645/648/658/647 all return -1. Only exception: sys 653 with six zeros returns 23 (error code, not data). No new VM primitives.
+- SysV IPC absent (525a) — CVE-2026-58087 dead
+- VM ops dead (524a) — all -1 except 653(zero)=23
+- **★ SCM_RIGHTS WORKS (526a, 2026-10-24)** — ALL 8 test variants pass fds successfully. Probe 56q was WRONG. GHOST HANDLE chain prerequisites met. SOCK_STREAM/DGRAM/SEQPACKET all deliver fds. Multiple fds in one msg work. This is the biggest new primitive since child thread ROP.
 
 ## When Analyzing Results
 

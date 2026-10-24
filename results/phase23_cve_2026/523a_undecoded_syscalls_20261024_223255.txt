@@ -1,0 +1,65 @@
+=== PROBE 523a: undecoded Sony syscalls ===
+
+pid: 563
+
+[A] sys 604 dl_get_metadata
+  604 (h=0 (h,buf,len)): ret=-1
+  604 (h=2 (h,buf,len)): ret=-1
+  604 (h=17 (h,buf,len)): ret=-1
+  604 (h=49 (h,buf,len)): ret=-1
+  604 (h=159 (h,buf,len)): ret=-1
+
+  604 (h=0 cmd=0): ret=-1
+  604 (h=0 cmd=1): ret=-1
+  604 (h=0 cmd=2): ret=-1
+  604 (h=0 cmd=3): ret=-1
+  604 (h=0 cmd=4): ret=-1
+  604 (h=0 cmd=5): ret=-1
+  604 (h=0 cmd=16): ret=-1
+
+  604 (h=0 (h,buf)): ret=-1
+  604 (h=2 (h,buf)): ret=-1
+
+  604 (h=0 buf[0]=0x40): ret=-1
+  604 (h=0 buf[0]=0x80): ret=-1
+  604 (h=0 buf[0]=0x100): ret=-1
+  604 (h=0 buf[0]=0x160): ret=-1
+  604 (h=0 buf[0]=0x200): ret=-1
+  604 (h=0 buf[0]=0x400): ret=-1
+
+[B] sys 636 set_timezone_info
+  636 (UTC str): ret=-1
+  636 (zeros): ret=-1
+  636 (buf): ret=-1
+
+[C] sys 640 (narg=8)
+  640 (zeros): ret=0
+  640 (cmd=0): ret=0
+  640 output dump (512 bytes):
+    (all zero)
+  640 (cmd=1): ret=0
+  640 output dump (512 bytes):
+    (all zero)
+  640 (cmd=2): ret=0
+  640 output dump (512 bytes):
+    (all zero)
+  640 (cmd=3): ret=0
+  640 output dump (512 bytes):
+    (all zero)
+
+[D] Other undecoded present syscalls
+  602 (zeros): ret=0
+  602 (h=0,buf): ret=-1
+
+  603 (zeros): ret=-1
+  603 (h=0,buf): ret=-1
+
+  605 (zeros): ret=-1
+  605 (h=0,buf): ret=-1
+
+  606 (zeros): ret=0
+  606 (h=0,buf): ret=0
+
+  Quick sweep 607-615 with (0, buf, 0x200):
+  607 (buf): ret=-1
+  608 (buf): ret=-1

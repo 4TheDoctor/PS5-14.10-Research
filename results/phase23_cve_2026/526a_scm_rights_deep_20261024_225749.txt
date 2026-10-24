@@ -1,0 +1,181 @@
+=== PROBE 526a: SCM_RIGHTS deep discrimination ===
+
+pid: 570
+test fd (/dev/rng): 24
+
+[A] SOCK_STREAM socketpair — SCM_RIGHTS
+  socketpair(SOCK_STREAM): ret=0, fd0=25, fd1=26
+  sendmsg: ret=4
+  recvmsg: ret=4, controllen=24, msg_flags=0x0
+  recv data: 0x41424344 (ABCD OK)
+  *** CMSG PRESENT: len=20, level=0xFFFF, type=1 ***
+  *** SCM_RIGHTS FD RECEIVED: 27 ***
+  *** fstat(received_fd=27): ret=0 ***
+  *** WORKING FD! mode=0x2124 ***
+  cmsg raw dump:
+    +0x00: 0x00000014
+    +0x04: 0x0000FFFF
+    +0x08: 0x00000001
+    +0x0C: 0x00000000
+    +0x10: 0x0000001B
+    +0x14: 0x00000000
+
+[B] SOCK_DGRAM socketpair — SCM_RIGHTS (reproduce 56q)
+  socketpair(SOCK_DGRAM): ret=0, fd0=25, fd1=26
+  sendmsg: ret=4
+  recvmsg: ret=4, controllen=24, msg_flags=0x0
+  recv data: 0x41424344 (ABCD OK)
+  *** CMSG PRESENT: len=20, level=0xFFFF, type=1 ***
+  *** SCM_RIGHTS FD RECEIVED: 27 ***
+  *** fstat(received_fd=27): ret=0 ***
+  *** WORKING FD! mode=0x2124 ***
+  cmsg raw dump:
+    +0x00: 0x00000014
+    +0x04: 0x0000FFFF
+    +0x08: 0x00000001
+    +0x0C: 0x00000000
+    +0x10: 0x0000001B
+    +0x14: 0x00000000
+
+[C] SOCK_SEQPACKET socketpair — SCM_RIGHTS
+  socketpair(SOCK_SEQPACKET): ret=0, fd0=25, fd1=26
+  sendmsg: ret=4
+  recvmsg: ret=4, controllen=24, msg_flags=0x0
+  recv data: 0x41424344 (ABCD OK)
+  *** CMSG PRESENT: len=20, level=0xFFFF, type=1 ***
+  *** SCM_RIGHTS FD RECEIVED: 27 ***
+  *** fstat(received_fd=27): ret=0 ***
+  *** WORKING FD! mode=0x2124 ***
+  cmsg raw dump:
+    +0x00: 0x00000014
+    +0x04: 0x0000FFFF
+    +0x08: 0x00000001
+    +0x0C: 0x00000000
+    +0x10: 0x0000001B
+    +0x14: 0x00000000
+
+[D] SOCK_STREAM with large control buffers
+  --- ctrl_size=1024 ---
+  socketpair(STREAM/1024): ret=0, fd0=25, fd1=26
+  sendmsg: ret=4
+  recvmsg: ret=4, controllen=24, msg_flags=0x0
+  recv data: 0x41424344 (ABCD OK)
+  *** CMSG PRESENT: len=20, level=0xFFFF, type=1 ***
+  *** SCM_RIGHTS FD RECEIVED: 27 ***
+  *** fstat(received_fd=27): ret=0 ***
+  *** WORKING FD! mode=0x2124 ***
+  cmsg raw dump:
+    +0x00: 0x00000014
+    +0x04: 0x0000FFFF
+    +0x08: 0x00000001
+    +0x0C: 0x00000000
+    +0x10: 0x0000001B
+    +0x14: 0x00000000
+  --- ctrl_size=4096 ---
+  socketpair(STREAM/4096): ret=0, fd0=25, fd1=26
+  sendmsg: ret=4
+  recvmsg: ret=4, controllen=24, msg_flags=0x0
+  recv data: 0x41424344 (ABCD OK)
+  *** CMSG PRESENT: len=20, level=0xFFFF, type=1 ***
+  *** SCM_RIGHTS FD RECEIVED: 27 ***
+  *** fstat(received_fd=27): ret=0 ***
+  *** WORKING FD! mode=0x2124 ***
+  cmsg raw dump:
+    +0x00: 0x00000014
+    +0x04: 0x0000FFFF
+    +0x08: 0x00000001
+    +0x0C: 0x00000000
+    +0x10: 0x0000001B
+    +0x14: 0x00000000
+
+[E] Multiple fds in SCM_RIGHTS (3 fds)
+  sendmsg(3 fds): ret=4
+  recvmsg(3 fds): ret=4, controllen=32
+  *** CMSG type=1, len=28 ***
+  *** 3 FDS RECEIVED: 27, 28, 29 ***
+
+[F] Send flags: MSG_DONTWAIT(0x80), MSG_NOSIGNAL(0x20000)
+  --- MSG_DONTWAIT ---
+  socketpair(STREAM/DONTWAIT): ret=0, fd0=25, fd1=26
+  sendmsg: ret=4
+  recvmsg: ret=4, controllen=24, msg_flags=0x0
+  recv data: 0x41424344 (ABCD OK)
+  *** CMSG PRESENT: len=20, level=0xFFFF, type=1 ***
+  *** SCM_RIGHTS FD RECEIVED: 30 ***
+  *** fstat(received_fd=30): ret=0 ***
+  *** WORKING FD! mode=0x2124 ***
+  cmsg raw dump:
+    +0x00: 0x00000014
+    +0x04: 0x0000FFFF
+    +0x08: 0x00000001
+    +0x0C: 0x00000000
+    +0x10: 0x0000001E
+    +0x14: 0x00000000
+  --- MSG_NOSIGNAL ---
+  socketpair(STREAM/NOSIGNAL): ret=0, fd0=25, fd1=26
+  sendmsg: ret=4
+  recvmsg: ret=4, controllen=24, msg_flags=0x0
+  recv data: 0x41424344 (ABCD OK)
+  *** CMSG PRESENT: len=20, level=0xFFFF, type=1 ***
+  *** SCM_RIGHTS FD RECEIVED: 30 ***
+  *** fstat(received_fd=30): ret=0 ***
+  *** WORKING FD! mode=0x2124 ***
+  cmsg raw dump:
+    +0x00: 0x00000014
+    +0x04: 0x0000FFFF
+    +0x08: 0x00000001
+    +0x0C: 0x00000000
+    +0x10: 0x0000001E
+    +0x14: 0x00000000
+
+[G] SOCK_DGRAM with LOCAL_CREDS set on receiver
+  socketpair(DGRAM/LOCALCREDS): ret=0, fd0=25, fd1=26
+  sendmsg: ret=4
+  recvmsg: ret=4, controllen=64, msg_flags=0x0
+  recv data: 0x41424344 (ABCD OK)
+  *** CMSG PRESENT: len=40, level=0xFFFF, type=3 ***
+  (SCM_CREDS received, not SCM_RIGHTS)
+  cmsg raw dump:
+    +0x00: 0x00000028
+    +0x04: 0x0000FFFF
+    +0x08: 0x00000003
+    +0x0C: 0x00000000
+    +0x10: 0x00000001
+    +0x14: 0x00000001
+    +0x18: 0x00000001
+    +0x1C: 0x00000001
+    +0x20: 0x00000001
+    +0x24: 0x00000001
+    +0x28: 0x00000014
+    +0x2C: 0x0000FFFF
+    +0x30: 0x00000001
+    +0x34: 0x00000000
+    +0x38: 0x0000001E
+    +0x3C: 0x00000000
+
+[H] Pass a socket fd (not a file fd)
+  socket fd to pass: 25
+  socketpair(STREAM/sock-fd): ret=0, fd0=31, fd1=32
+  sendmsg: ret=4
+  recvmsg: ret=4, controllen=24, msg_flags=0x0
+  recv data: 0x41424344 (ABCD OK)
+  *** CMSG PRESENT: len=20, level=0xFFFF, type=1 ***
+  *** SCM_RIGHTS FD RECEIVED: 33 ***
+  *** fstat(received_fd=33): ret=0 ***
+  *** WORKING FD! mode=0xC1B6 ***
+  cmsg raw dump:
+    +0x00: 0x00000014
+    +0x04: 0x0000FFFF
+    +0x08: 0x00000001
+    +0x0C: 0x00000000
+    +0x10: 0x00000021
+    +0x14: 0x00000000
+
+[I] SUMMARY
+If ANY test above shows 'SCM_RIGHTS FD RECEIVED' or controllen>0
+with cmsg type=1, then fd passing WORKS and GHOST HANDLE chain is VIABLE.
+If ALL show controllen=0, kernel strips SCM_RIGHTS in game jail — chain DEAD.
+
+pid: 570 OK
+
+=== PROBE 526a COMPLETE ===

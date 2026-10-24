@@ -1,0 +1,107 @@
+=== PROBE 522a: kptr nature test ===
+
+pid: 563
+mod2: "libSceLibcInternal.sprx" data=0x839698000 dsz=0x84000
+
+[A] Full range scan (hi >= 0xFFFF0000, excluding 0xFFFFFFFF)
+  total entries (hi >= 0xFFFF0000): 305
+  table region: +0x9F00 to +0xA880
+  min: 0xFFFF00B0_00035448
+  max: 0xFFFFC4D0_00036978
+
+  distribution by hi nibble range:
+    0xFFFF0000-0xFFFF0FFF: 18 entries
+    0xFFFF1000-0xFFFF1FFF: 4 entries
+    0xFFFF2000-0xFFFF2FFF: 8 entries
+    0xFFFF3000-0xFFFF3FFF: 16 entries
+    0xFFFF4000-0xFFFF4FFF: 32 entries
+    0xFFFF5000-0xFFFF5FFF: 28 entries
+    0xFFFF6000-0xFFFF6FFF: 19 entries
+    0xFFFF7000-0xFFFF7FFF: 40 entries
+    0xFFFF8000-0xFFFF8FFF: 19 entries
+    0xFFFF9000-0xFFFF9FFF: 49 entries
+    0xFFFFA000-0xFFFFAFFF: 22 entries
+    0xFFFFB000-0xFFFFBFFF: 43 entries
+    0xFFFFC000-0xFFFFCFFF: 7 entries
+
+[B] Stability test
+  20 values checked, 0 changed
+  *** ALL STABLE within connection ***
+
+[C] IEEE 754 double analysis
+  [1] +0x9F00: 0xFFFF00B0_00035448
+       sign=1 exp=0x7FF mantissa_hi=0xF00B0 mantissa_lo=0x00035448 -> NaN (quiet=true)
+  [2] +0x9F08: 0xFFFF0100_0003F750
+       sign=1 exp=0x7FF mantissa_hi=0xF0100 mantissa_lo=0x0003F750 -> NaN (quiet=true)
+  [3] +0x9F10: 0xFFFF0230_00035474
+       sign=1 exp=0x7FF mantissa_hi=0xF0230 mantissa_lo=0x00035474 -> NaN (quiet=true)
+  [4] +0x9F18: 0xFFFF0360_000354A4
+       sign=1 exp=0x7FF mantissa_hi=0xF0360 mantissa_lo=0x000354A4 -> NaN (quiet=true)
+  [5] +0x9F20: 0xFFFF0490_000354D4
+       sign=1 exp=0x7FF mantissa_hi=0xF0490 mantissa_lo=0x000354D4 -> NaN (quiet=true)
+
+  NaN entries in table: 305 / 305
+  *** ALL TABLE VALUES ARE IEEE 754 NaN ***
+  These are NOT kernel pointers - they are NaN-boxed values!
+
+[D] NaN-boxing type analysis
+  Extracting NaN payloads (first 10):
+  [ 1] full=0xFFFF00B0_00035448 payload(lo48)=0x00B0_00035448
+  [ 2] full=0xFFFF0100_0003F750 payload(lo48)=0x0100_0003F750
+  [ 3] full=0xFFFF0230_00035474 payload(lo48)=0x0230_00035474
+  [ 4] full=0xFFFF0360_000354A4 payload(lo48)=0x0360_000354A4
+  [ 5] full=0xFFFF0490_000354D4 payload(lo48)=0x0490_000354D4
+  [ 6] full=0xFFFF04E0_0003F778 payload(lo48)=0x04E0_0003F778
+  [ 7] full=0xFFFF0530_0003F7A0 payload(lo48)=0x0530_0003F7A0
+  [ 8] full=0xFFFF0580_0003F7C8 payload(lo48)=0x0580_0003F7C8
+  [ 9] full=0xFFFF05C0_00035504 payload(lo48)=0x05C0_00035504
+  [10] full=0xFFFF0610_0003F7F0 payload(lo48)=0x0610_0003F7F0
+
+[E] Pre-table context (128B before table start)
+  +0x9E80: 0xFFFEF980_00035314
+  +0x9E88: 0xFFFEF9A0_00035334
+  +0x9E90: 0xFFFEF9F0_0003F674
+  +0x9E98: 0xFFFEFA50_0003F69C
+  +0x9EA0: 0xFFFEFA60_00035354
+  +0x9EA8: 0xFFFEFA70_00035368
+  +0x9EB0: 0xFFFEFB30_0003537C
+  +0x9EB8: 0xFFFEFB50_000353AC
+  +0x9EC0: 0xFFFEFB70_000353CC
+  +0x9EC8: 0xFFFEFB90_000353EC
+  +0x9ED0: 0xFFFEFBA0_0003540C
+  +0x9ED8: 0xFFFEFBB0_00035420
+  +0x9EE0: 0xFFFEFBC0_00035434
+  +0x9EE8: 0xFFFEFEE0_0003F6C8
+  +0x9EF0: 0xFFFEFF30_0003F6FC
+  +0x9EF8: 0xFFFEFF90_0003F724
+  --- TABLE STARTS ---
+  +0x9F00: 0xFFFF00B0_00035448 [TABLE]
+  +0x9F08: 0xFFFF0100_0003F750 [TABLE]
+  +0x9F10: 0xFFFF0230_00035474 [TABLE]
+  +0x9F18: 0xFFFF0360_000354A4 [TABLE]
+
+[F] Post-table context (64B after table end)
+  +0xA868: 0xFFFFC200_000368E8 [TABLE]
+  +0xA870: 0xFFFFC2F0_00036918 [TABLE]
+  +0xA878: 0xFFFFC3E0_00036948 [TABLE]
+  +0xA880: 0xFFFFC4D0_00036978 [TABLE]
+  --- TABLE ENDS ---
+  +0xA888: 0x01119BFF_000369A8
+  +0xA890: 0x001F0F01_16030C08
+  +0xA898: 0x00000000_00000100
+  +0xA8A0: 0x0193001C_01259BFF
+  +0xA8A8: 0x0002DB08_01930000
+  +0xA8B0: 0x02A70002_D94C01C0
+  +0xA8B8: 0x004102BA_0102F113
+  +0xA8C0: 0x00000000_00000100
+
+[G] Table metrics
+  table offset: +0x9F00 to +0xA880
+  table size: 2440 bytes (305 entries)
+  data region: 540672 bytes
+  table = 0.5% of data
+  entries matching hi>=0xFFFF8000 (our kptr filter): 140 of 305 total
+
+pid: 563 OK
+
+=== PROBE 522a COMPLETE ===

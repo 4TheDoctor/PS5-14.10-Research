@@ -1,0 +1,57 @@
+=== PROBE 508a: module NID table scan ===
+
+pid: 514
+
+[A] Deep scan of dynlib_get_info(593) for handle 0 (eboot)...
+  Full struct dump (qwords with nonzero hi byte):
+    +0x008: 0x69622E746F6F6265
+    +0x110: 0x500494000
+    +0x120: 0x300180000
+    +0x130: 0x100018000
+    +0x148: 0xA7266D1600000003
+    +0x150: 0x183EB6EC9E4F76F
+  text: 0x453BC000 size=0x494000
+  data: 0x45BBC000 size=0x180000
+  Fields past data_size:
+    +0x128: 0x459BC000
+    +0x130: 0x100018000
+    +0x138: 0x0
+    +0x140: 0x0
+    +0x148: 0xA7266D1600000003
+    +0x150: 0x183EB6EC9E4F76F
+    +0x158: 0x30761A8A
+
+[B] Scanning eboot headers for ELF dynamic section...
+  ELF magic: 0x62696C2F [NOT ELF]
+  First 16 bytes:
+    +0: 0x62696C2F
+    +4: 0x63657865
+    +8: 0x2D646C2F
+    +12: 0x2E666C65
+  e_phoff=0x4853564112DDE4855 e_phentsize=19486 e_phnum=13709
+  phoff=0x48535641E5894855 phentsize=19486 phnum=13709
+
+[C] No PT_DYNAMIC found, trying fallback...
+  Scanning eboot data segment for pointer-like values...
+  data at 0x45BBC000, scanning 65536 bytes
+    data+0x80: 0x456CFCE0 (eboot+0x313CE0)
+    data+0x18D0: 0x456CFEC0 (eboot+0x313EC0)
+    data+0x3110: 0x456D0250 (eboot+0x314250)
+    data+0x4950: 0x456D05F0 (eboot+0x3145F0)
+    data+0x6190: 0x456D09A0 (eboot+0x3149A0)
+    data+0x79D0: 0x456D0D60 (eboot+0x314D60)
+    data+0x9210: 0x456D1100 (eboot+0x315100)
+    data+0xAA50: 0x456D14B0 (eboot+0x3154B0)
+    data+0xC290: 0x456D1860 (eboot+0x315860)
+    data+0xDAD0: 0x456D1C20 (eboot+0x315C20)
+    data+0xF310: 0x456D2010 (eboot+0x316010)
+    total eboot-pointing qwords in data: 11
+
+[G] Summary
+  If strtab strings were found above, try them with 591 in a follow-up probe.
+  The NID encoding format should be visible in the strtab dump.
+
+=== VERIFICATION ===
+pid: 514 [OK]
+
+=== PROBE 508a COMPLETE ===

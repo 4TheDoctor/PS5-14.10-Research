@@ -1,0 +1,33 @@
+=== PROBE 542b: RE-SUBMIT ON CORRUPTED AIO SLOTS ===
+
+pid=80
+eb=0x000000007C2C4000 lk=0x0000000834928000
+[A] init
+  urandom=24
+  socketpairs=32/32
+
+[B] Submit blocking reads + cancel race
+  originals=32
+  spray=128 stuck=128
+  CORRUPTION CONFIRMED
+  spray ID range: 0x390 - 0x40F
+
+[C] Submit new requests — check for ID reuse
+  new_submitted=64 reused_ids=0
+  new: ok=0 stuck=64
+  data: written=0 sentinel=64
+
+[D] Force-delete corrupted spray IDs, then re-submit
+  delete: ok=0 fail=16
+  post-del submitted=32 reused=0
+  post-del: ok=0 stuck=32
+
+[E] Kernel pointer scan
+  total kernel_ptrs=0
+
+[F] Health check
+  poll=0/1 del=0/80020010
+  *** UNHEALTHY ***
+
+pid=80 OK
+=== 542b DONE ===

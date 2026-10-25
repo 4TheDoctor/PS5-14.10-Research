@@ -54,6 +54,9 @@ This section scopes the current claims; older notes describe their cited probe s
 | mlock(203) heap pages | mlock returns 0 on heap pages — prevents paging, ensures residency. munlock(204) also works. Probe 392f, 2026-10-23 |
 | stat(188) filesystem enumeration | stat works on /, /dev, /dev/*, /app0, /app0/*, /system_tmp. mode=0x0000 everywhere (Sony zeroes). Other paths (/system, /data, /proc, /tmp) return -1. Probe 392f, 2026-10-23 |
 | SCM_RIGHTS fd passing | sendmsg/recvmsg with SCM_RIGHTS delivers working fds across SOCK_STREAM/DGRAM/SEQPACKET socketpairs. Multiple fds (3+) in one message work. Received fds pass fstat. **Probe 56q was wrong** — 526a confirms fd passing is NOT stripped in game jail. Probe 526a, 2026-10-24 |
+| AllocateDirectMemory (GOT wrapper) | `libkernel+0x17EF0` (sceKernelAllocateDirectMemory) works from sandbox via GOT — rv=0, phys `0x110010000`+. `libkernel+0x17810` (GetDirectMemorySize) returns `0x150000000`. Raw syscalls 546-554 return -1 but the wrappers bypass that. MapDirectMemory (`libkernel+0x15020`) crashes because it's 7-arg and fcall only forwards 6 — needs ROP chain. DEM9N101 step163-190, 2026-10-25 |
+| dmem0 R/W verified (kernel copyin) | DEM9N101 cross-validated: kernel copyin reads dmem0 pages, Lua memory.write_dword visible through copyin path, AIO-written bytes agree on both paths. dmem0 is genuine R/W over GPU direct memory. physhm write claim REFUTED (Lua shadow artifact). DEM9N101 step163-179, 2026-10-25 |
+| osem lifecycle (549-556) | With corrected ABI: 549 create(name, attrs, initial, max), 553 wait, 554 poll, 555 post, 556 cancel, 550 delete — full lifecycle works. delete-while-waiting is safe (no UAF). DEM9N101 step184b, 2026-10-25 |
 
 ### What's Blocked (Hard Walls)
 - **fn_addr/ROP execution is not demonstrated** — 45c undermines that earlier model for tested calls. Later selected CClosure redirects are separate userland evidence; neither identifies the complete syscall dispatcher
@@ -417,10 +420,11 @@ Results are saved to `results/<phase>/<name>_<timestamp>.txt`.
 - **Module data region "kernel pointers" are NaN-boxed Lua values** (519a-522a, 2026-10-24): dynlib_get_info(593) data regions for 37 modules contain stride-8 tables of 64-bit values with `hi >= 0xFFFF8000`. Initial scan found 5081 such values, all writable. However: 521a revealed the table includes 0xFFFF7xxx values below the filter, with arithmetic progression (+0x30 in high words = 16KB page multiples); 522a proved 100% of the 305 values in h=2's table are IEEE 754 NaN (exponent = 0x7FF). These are Lua 5.1 NaN-boxed non-double values (strings, tables, functions, userdata), not kernel pointers. The table occupies +0x9F00 to +0xA880 (2440 bytes, 0.5% of the 540KB data region). Zero kernel pointers exist in any module data region. Do not re-scan module data for kernel addresses.
 
 **NEXT STEPS:**
-1. **★★★ GHOST HANDLE exploitation (CVE-2019-5607)** — SCM_RIGHTS confirmed working (526a). Next: test reference leak on failed sendmsg (fill socket buffer, send SCM_RIGHTS, check if refcount leaks). If the leak exists, iterate to overflow 32-bit refcount → UAF on kernel file object → heap spray for controlled corruption → kernel R/W. Combined with thr_new child threads for concurrent fd racing.
-2. **★★ fd-close race via child thread** — use thr_new ROP child to close(fd) simultaneously with main thread sendmsg(SCM_RIGHTS, fd). Detect stale fd, type confusion, or kernel panic.
-3. **★ Kernel image acquisition** — without a 14.10 kernel dump, we can't identify the Praetorian ioctl device/command (may require credentials the game lacks), verify sysent layout, or find new attack surface.
-4. **Revisit 13.60 dossier for undiscovered Sony syscall arg shapes** — the Sony range (532-676) is largely exhausted but a few handlers (604, 636) have no decoded contract.
+1. **★★★ MapDirectMemory via ROP chain** — AllocateDirectMemory WORKS (DEM9N101 confirmed, phys addrs returned). MapDirectMemory (`libkernel+0x15020`) is 7-arg and crashes via fcall (only 6 regs). Use thr_new child thread ROP to call it with all 7 args via `push_sysv`/`align_stack`. If it succeeds → direct physical memory R/W → scan for kernel → KASLR defeated without any info leak. **This is the highest-priority target.**
+2. **★★ GHOST HANDLE additional paths (527a)** — 89a tested core CVE-2019-5607 pattern → "CVE PATCHED". 527a covers 7 more error paths (buffer-full fail, inflight discard, double-send, SO_SNDBUF manipulation, 1000x DGRAM, SOCK_STREAM fill). Low expectation but closes the door. Push to fork for Qwen to execute.
+3. **★★ WebKit FontFaceSet UAF** — ng643 demonstrated object substitution (PRs #149/#150). Needs a same-size class with a shapeable field + address disclosure. We could contribute the addr-leak side using our Lua primitives.
+4. **★ fd-close race via child thread** — use thr_new ROP child to close(fd) simultaneously with main thread sendmsg(SCM_RIGHTS, fd). Detect stale fd, type confusion, or kernel panic.
+5. **Kernel image acquisition** — without a 14.10 kernel dump, we can't verify sysent layout or find new attack surface.
 
 **DONE (this session):**
 - thr_new(455) arg delivery confirmed (56l) — rdi=arg, gadget at eboot+0x92C67
@@ -449,6 +453,11 @@ Results are saved to `results/<phase>/<name>_<timestamp>.txt`.
 - SysV IPC absent (525a) — CVE-2026-58087 dead
 - VM ops dead (524a) — all -1 except 653(zero)=23
 - **★ SCM_RIGHTS WORKS (526a, 2026-10-24)** — ALL 8 test variants pass fds successfully. Probe 56q was WRONG. GHOST HANDLE chain prerequisites met. SOCK_STREAM/DGRAM/SEQPACKET all deliver fds. Multiple fds in one msg work. This is the biggest new primitive since child thread ROP.
+- **physhm write claim REFUTED (DEM9N101, 2026-10-25)** — Lua memory API readback on physhm VA is a shadow artifact. Cross-validated: kernel copyin (writev-iovec, write(pipe)) returns EFAULT, CPU-side read faults lethally. physhm mmap/mprotect "success" does not imply backed pages.
+- **PUP self-decryption dead from game sandbox (DEM9N101, 2026-10-25)** — `/dev/pup_update0` and all aliases refuse open.
+- **AIO unclamped count → device pager absorbs (DEM9N101, 2026-10-25)** — count not clamped, but overrun into dmem0 mapping is absorbed by device pager (faults in extra pages). No adjacent-mapping corruption. Self-corruption only.
+- **osem delete-while-waiting safe (DEM9N101, 2026-10-25)** — concurrent delete(550) while blocked in wait(553) + 60-object spray + mass post(555) wakes cleanly with -1. No UAF.
+- **CVE-2019-5607 core path PATCHED (89a, 2026-10-21)** — buffer-full → fail SCM_RIGHTS → check refcount: pipe destroyed after close, no leaked references. 527a covers additional error paths (not yet executed).
 
 ## When Analyzing Results
 

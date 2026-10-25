@@ -1,0 +1,61 @@
+=== PROBE 542a: CLOSE BACKING FD + CORRUPTED AIO ===
+
+pid=80
+eb=0x000000007C2C4000 lk=0x0000000834928000
+[A] init
+  urandom fds: 24 25 26 27
+  socketpairs=32/32
+  shared=0x0000000311108000
+
+[B] Submit blocking AIO reads
+  submitted=32
+  pending=32 (want all pending)
+
+[C] Cancel race
+  chain=13480B launching...
+  spray=128
+  child_done=32
+  swaps=0 cancel_ok=32
+
+[D] Spray health BEFORE fd close
+  healthy=0 stuck=128
+  CORRUPTION CONFIRMED: 128 spray requests stuck
+
+[E] Close urandom fds
+  close(fd=24) rv=0
+  close(fd=25) rv=0
+  close(fd=26) rv=0
+  close(fd=27) rv=0
+
+[F] Reclaim fd slots with socketpairs
+  socketpair 1: fd=24,25
+  socketpair 2: fd=26,27
+  socketpair 3: fd=92,93
+  socketpair 4: fd=94,95
+  socketpair 5: fd=96,97
+  socketpair 6: fd=98,99
+  socketpair 7: fd=100,101
+  socketpair 8: fd=102,103
+  reclaimed=8 socketpairs
+
+[G] Probe corrupted spray IDs after fd close
+  poll: ok=0 stuck=128 fail=0
+  delete: ok=0 refused=128 weird=0
+  kernel_ptrs=0 anomalies=0
+
+[H] Submit AIO on reclaimed socketpair fds
+  new_submitted=8/8
+  NEW STUCK: id=0x367 st=0x1
+  NEW STUCK: id=0x368 st=0x1
+  NEW STUCK: id=0x369 st=0x1
+  new: ok=0 stuck=8 sentinel_unchanged=8
+
+[I] Health check
+  create=0x36F poll=0/1 del=0/80020010
+  *** UNHEALTHY ***
+
+[J] Cleanup
+  total kernel_ptrs=0 total anomalies=0
+
+pid=80 OK
+=== 542a DONE ===

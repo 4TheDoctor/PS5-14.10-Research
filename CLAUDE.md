@@ -53,6 +53,7 @@ This section scopes the current claims; older notes describe their cited probe s
 | POSIX shm (shm_open/ftruncate/mmap) | shm_open(482) works: SHM_ANON, named objects, O_CREAT\|O_RDWR, ftruncate, mmap(MAP_SHARED). sendfile(393) on shm fds sends 16KB/page with interleaved drain. shm_open2(571) is nosys — no largepage objects. Probes 391a-391d, 2026-10-23 |
 | mlock(203) heap pages | mlock returns 0 on heap pages — prevents paging, ensures residency. munlock(204) also works. Probe 392f, 2026-10-23 |
 | stat(188) filesystem enumeration | stat works on /, /dev, /dev/*, /app0, /app0/*, /system_tmp. mode=0x0000 everywhere (Sony zeroes). Other paths (/system, /data, /proc, /tmp) return -1. Probe 392f, 2026-10-23 |
+| **aio_multi_delete TOCTOU double-free** | Two child threads calling 662(ids, N, states) concurrently on the same polled ID array produce double-deletes: 65/480 IDs freed by BOTH threads across 30 iterations (26/30 iters hit). Requires: submit individually via 669, poll via 664 (prerequisite — unpolled requests return 0x80020010), NO 670 init (poisons delete path). 662 works without sysarch (no errno touch). Probes 65d-65l, confirmed 65l. See `docs/AIO_DOUBLE_FREE_14_10.md` |
 
 ### What's Blocked (Hard Walls)
 - **fn_addr/ROP execution is not demonstrated** — 45c undermines that earlier model for tested calls. Later selected CClosure redirects are separate userland evidence; neither identifies the complete syscall dispatcher
@@ -354,7 +355,9 @@ python tools/run_session40.py --ps5-ip YOUR_PS5_IP --fake-ip YOUR_TEST_HOST_IP
 
 Results are saved to `results/<phase>/<name>_<timestamp>.txt`.
 
-## Current Attack Priority (Updated 2026-10-23 — post-56e2 results)
+## Current Attack Priority (Updated 2026-10-23 — aio_multi_delete double-free CONFIRMED)
+
+**BREAKTHROUGH:** `aio_multi_delete` (syscall 662) TOCTOU double-free confirmed live on 14.10 (probe 65l). Two concurrent child threads calling 662 on the same polled ID array produce kernel double-frees: 65 out of 480 IDs freed by both threads across 30 iterations. This is the first confirmed kernel memory corruption primitive on 14.10. Next: heap spray to control the freed object → kernel R/W → KASLR defeat.
 
 **Evidence update:** Phase 14 (54a–55g) and phase 15 (56d-56e2) examined KASLR candidates, CClosure gadgets, and routing socket paths. NET_RT_DUMP "kernel pointers" are proven false positives (sockaddr boundary artifacts). CVE-2026-3038 sa_len=127 accepted without panic. CClosure deep stack reads yield only userland. No KASLR defeat path identified. native.fcall_with_rax provides arbitrary userland function calls.
 
@@ -365,6 +368,7 @@ Results are saved to `results/<phase>/<name>_<timestamp>.txt`.
 - **Scope:** later 56c/56f support selected existing Lua C targets with output and restore checks. Arbitrary target/ABI support, injected-page execution and a working general ROP chain remain unverified. The recorded region protection is userland metadata, not kernel access.
 
 **REMAINING PRIMITIVES:**
+- **★ aio_multi_delete kernel double-free** — two child threads calling 662(ids, N, states) concurrently double-free AIO sub-objects. ~13.5% hit rate (65/480). Requires: individual 669 submits, 664 poll before delete, NO 670 init. Probe 65l confirmed.
 - **CClosure +0x20 function redirect (selected targets)** — Lua arguments, target-like output and restore checks are recorded for rawequal/rawget/select changes (56c/56f); machine-register arguments and general native targets are not established.
 - Tested syscall invocation via `make_syscall(N)`; the exact C-level dispatcher implementation is unidentified
 - Heap R/W via GPU mmap (256+ pages)
@@ -415,9 +419,10 @@ Results are saved to `results/<phase>/<name>_<timestamp>.txt`.
 - **BSD-native syscall range (1-530) exhausted** (388a-392f, 2026-10-23): ~400 syscalls tested across probes 388a-389i (phase 18) and 392a-392f (phase 20). sc102 returns 160B socket info, sc125 returns 160B interface data — both zero kernel pointers. fstatfs/getfsstat/statfs all blocked. 40 unnamed slots (91,94,119,151-153,etc) all -1 for three arg patterns. modfind/modnext/modfnext blocked. ktimer create/settime accept but gettime/delete fail (stubs). stat shows /, /dev/*, /app0/*, /system_tmp visible (mode=0x0000 everywhere). socketclose(114) works as alt close. sched_getparam returns prio=700 (Sony custom). getlogin="root". profil accepts but writes 0 samples. ptrace/rfork/minherit/cpuset/audit all blocked. **Zero kernel pointers found across the entire BSD-native range.**
 
 **NEXT STEPS:**
-1. **★ Kernel image acquisition** — without a 14.10 kernel dump, we can't identify the Praetorian ioctl device/command (may require credentials the game lacks), verify sysent layout, or find new attack surface. Investigate if any accessible syscall or device node can copy kernel .text (e.g. debug stubs, coredump paths, unknown 13.60 syscalls that might work differently on 14.10).
-2. **JSC corpus** — requires browser access mechanism from game process (not currently available)
-3. **Revisit 13.60 dossier for undiscovered Sony syscall arg shapes** — the Sony range (532-676) is largely exhausted but a few handlers (604, 636) have no decoded contract. New arg patterns from deeper decompilation might unlock handlers that returned -1 to generic args.
+1. **★ Heap spray after double-free** — identify which kernel object is freed by 662's sub-object release, spray matching-size allocations (pipe buffers, shm pages, socket options) to reclaim the slot, then read/write through the dangling pointer. This is the path to kernel R/W.
+2. **★ KASLR defeat via double-free** — if the freed object contains a kernel pointer, reclaiming it with controlled data and reading back gives a kernel address. Alternatively, use the 624 VM-op counter as a side channel during heap manipulation.
+3. **Kernel image acquisition** — a 14.10 dump would reveal the exact freed object type and optimal spray target. Investigate debug stubs or coredump paths.
+4. **JSC corpus** — requires browser access mechanism from game process (not currently available)
 
 **DONE (this session):**
 - thr_new(455) arg delivery confirmed (56l) — rdi=arg, gadget at eboot+0x92C67
